@@ -31,6 +31,10 @@ real saftery concern but it is more privacy related.
 **How I resolved it:** Resolved the `.gitignore` conflict by keeping both ignore patterns. After the rebase completed, I noticed `models.py` no longer contained `WatchlistEntry` and confirmed via `grep -rn "WatchlistEntry"` that `watchlist_service.py` and `test_watchlist.py` still referenced it. I re-added the `WatchlistEntry` class to `models.py`, changing `film_id` from `db.Integer` to `db.String(36)` to match `Film.id`'s new UUID type post-refactor. I also updated the fake film_id in `test_add_to_watchlist_nonexistent_film_raises` from an integer placeholder to a UUID-shaped string for consistency.
 **How I verified no conflict remains:** Ran `pytest tests/ -v` — all 6 tests pass. Confirmed the app boots cleanly with `python app.py` (no ImportError). Ran `git log --oneline` to confirm the branch history is a clean linear sequence on top of main's UUID refactor commit, with no merge commits.
 
+## Commit History
+
+![git log --oneline output](./git-log-output.png)
+
 ## PR Description
 ## What this adds
 Adds a watchlist feature so users can save films they want to watch later. Includes a `WatchlistEntry` model, service functions (`add_to_watchlist`, `get_watchlist`), and REST endpoints (`GET /watchlist/<user_id>`, `POST /watchlist/<user_id>/add`).
