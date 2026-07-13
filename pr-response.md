@@ -1,7 +1,7 @@
 # PR Response Doc — CineLog Watchlist Feature
 
 ## AI Usage
-<!-- Fill in at the end — how you used AI tools during this project -->
+I used Claude throughout this project for orientation and troubleshooting. Early on, I had it walk through `collection_service.py` and `test_collection.py` to confirm the dedup and testing patterns before writing my own versions in `watchlist_service.py` and `test_watchlist.py`. The most valuable use was during the rebase (Comment 6): after `git rebase origin/main` completed without any conflict in `models.py`, I used AI to help me verify the rebase hadn't silently broken anything rather than assuming "no conflict = success." That check caught that the `WatchlistEntry` class had been dropped entirely from `models.py` during the rebase, which I then fixed by re-adding it with the UUID `film_id` type. I wrote my own reasoning for Comments 4 and 5 independently — the AI wasn't used to draft either argument.
 
 ## Comment 1 — Rename
 **What I did:** Renamed `save_to_watchlist()` to `add_to_watchlist()` in services/watchlist_service.py, matching the verb_to_noun convention used by add_to_collection(). Updated the one call site in routes/watchlist.py.
