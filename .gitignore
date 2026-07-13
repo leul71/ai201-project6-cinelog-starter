@@ -4,9 +4,6 @@
 instance/
 __pycache__/
 *.pyc
-<<<<<<< HEAD
 .pytest_cache/
-=======
->>>>>>> cf7e350 (chore: add .gitignore)
 .venv/
 venv/
