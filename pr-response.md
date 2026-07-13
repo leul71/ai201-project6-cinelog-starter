@@ -32,4 +32,32 @@ real saftery concern but it is more privacy related.
 **How I verified no conflict remains:** Ran `pytest tests/ -v` — all 6 tests pass. Confirmed the app boots cleanly with `python app.py` (no ImportError). Ran `git log --oneline` to confirm the branch history is a clean linear sequence on top of main's UUID refactor commit, with no merge commits.
 
 ## PR Description
-<!-- Written at the end — feature overview, design decisions, manual testing steps -->
+## What this adds
+Adds a watchlist feature so users can save films they want to watch later. Includes a `WatchlistEntry` model, service functions (`add_to_watchlist`, `get_watchlist`), and REST endpoints (`GET /watchlist/<user_id>`, `POST /watchlist/<user_id>/add`).
+
+## Changes from review
+- Renamed `save_to_watchlist()` to `add_to_watchlist()` to match the project's verb_to_noun convention
+- Added deduplication so a film can't be added to the same watchlist twice (raises `AlreadyInWatchlistError`)
+- Added a test for adding a nonexistent film (`FilmNotFoundError`)
+- Rebased on main to pick up the integer-to-UUID film ID migration; restored `WatchlistEntry.film_id` as a UUID string to match
+
+## Design decisions
+
+**Default visibility (`public`):** I'd default watchlist entries to private rather than public. A watchlist reveals ongoing taste and intent in a way a completed collection doesn't, and defaulting to public risks nudging people toward conforming their list to what peers are watching rather than what they're actually curious about. The tradeoff is losing some of the social discovery value a public-by-default list would offer — that could be recovered later with an opt-in "suggest to friends" feature instead of a default.
+
+**Sort order:** I'd keep watchlist entries sorted by date added (descending) rather than alphabetically. Most people add films to a watchlist in a moment of interest, and that interest tends to fade with time — surfacing recent adds first keeps the list matched to what someone's actually likely to watch next, similar to how Netflix and other streaming platforms default. Alphabetical sort is better suited to someone who already knows exactly what they're looking for, which is a secondary use case here.
+
+## How to test manually
+1. Start the app: `python app.py`
+2. Create a user and film via the existing endpoints (or directly via a Python shell using `create_app`/`db`)
+3. Add a film to the watchlist:
+
+POST /watchlist/<user_id>/add
+
+Body: { "film_id": "<uuid>" }
+
+4. Confirm a 201 response with the new entry
+5. Repeat the same POST with the same `film_id` — confirm it fails with `AlreadyInWatchlistError` rather than creating a duplicate
+6. Retry with a made-up UUID for `film_id` — confirm it raises `FilmNotFoundError`
+7. View the watchlist: `GET /watchlist/<user_id>` — confirm the film appears with `date_added` and `public` fields
+8. Run the automated test suite: `pytest tests/ -v` — all 6 tests should pass
